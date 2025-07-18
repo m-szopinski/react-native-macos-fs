@@ -10,7 +10,7 @@ Pod::Spec.new do |s|
   s.author       = { "Your Name" => "m-szopinski" }
   s.platform     = :osx, "10.14"
   s.source       = { :path => "." }
-  s.source_files = "RNMacOSFS.swift", "RNMacOSFS.m"
+  s.source_files = "macos/**/*.{h,m,mm,swift}"
   s.requires_arc = true
   s.swift_version = "5.0"
   s.dependency "React-Core"

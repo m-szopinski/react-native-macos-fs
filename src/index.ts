@@ -16,24 +16,39 @@ interface RNMacOSFSInterface {
     mkdir(path: string): Promise<void>;
     readFileBinary(path: string): Promise<string>;
     writeFileBinary(path: string, base64: string): Promise<void>;
-    getConstants(): Promise<{
-        DocumentDirectoryPath: string;
-        TemporaryDirectoryPath: string;
-        CachesDirectoryPath: string;
-        DownloadsDirectoryPath?: string;
-        DesktopDirectoryPath?: string;
-    }>;
     pick(): Promise<string>;
     pickDirectory(): Promise<string>;
+    readDir(path: string): Promise<
+        Array<{
+            name: string;
+            path: string;
+            isFile: boolean;
+            isDirectory: boolean;
+        }>
+    >;
+    // Constants
+    DocumentDirectoryPath: string;
+    TemporaryDirectoryPath: string;
+    CachesDirectoryPath: string;
+    DownloadsDirectoryPath: string;
+    DesktopDirectoryPath: string;
 }
 
-const RNMacOSFS: RNMacOSFSInterface = NativeModules.RNMacOSFS
-    ? NativeModules.RNMacOSFS
-    : new Proxy({}, {
-        get() {
-            throw new Error(LINKING_ERROR);
-        },
-    }) as RNMacOSFSInterface;
+// Ensure RNMacOSFS is either the real native module or a proxy that throws
+const RNMacOSFS = NativeModules.RNMacOSFS as RNMacOSFSInterface | undefined;
+
+if (!RNMacOSFS) {
+    throw new Error(LINKING_ERROR);
+}
+
+// Export constants immediately and synchronously
+export const constants = {
+    DocumentDirectoryPath: RNMacOSFS.DocumentDirectoryPath,
+    TemporaryDirectoryPath: RNMacOSFS.TemporaryDirectoryPath,
+    CachesDirectoryPath: RNMacOSFS.CachesDirectoryPath,
+    DownloadsDirectoryPath: RNMacOSFS.DownloadsDirectoryPath,
+    DesktopDirectoryPath: RNMacOSFS.DesktopDirectoryPath,
+} as const;
 
 const defaultEncoding: Encoding = 'utf8';
 
@@ -41,6 +56,7 @@ function handleError(method: string, path: string, err: unknown): never {
     throw new Error(`[react-native-macos-fs] ${method} failed on '${path}': ${String(err)}`);
 }
 
+// API methods
 export const readFile = async (path: string, encoding: Encoding = defaultEncoding) => {
     try {
         return await RNMacOSFS.readFile(path, encoding);
@@ -97,10 +113,6 @@ export const writeFileBinary = async (path: string, base64: string) => {
     }
 };
 
-export const getConstants = async () => {
-    return await RNMacOSFS.getConstants();
-};
-
 export const pick = async () => {
     try {
         return await RNMacOSFS.pick();
@@ -114,5 +126,13 @@ export const pickDirectory = async () => {
         return await RNMacOSFS.pickDirectory();
     } catch (err) {
         throw new Error(`[react-native-macos-fs] pickDirectory failed: ${String(err)}`);
+    }
+};
+
+export const readDir = async (path: string) => {
+    try {
+        return await RNMacOSFS.readDir(path);
+    } catch (err) {
+        throw new Error(`[react-native-macos-fs] readDir failed on '${path}': ${String(err)}`);
     }
 };

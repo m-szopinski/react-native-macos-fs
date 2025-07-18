@@ -17,10 +17,16 @@
   "files": [
     "lib",
     "macos",
+    "src",
+    "*.podspec",
     "README.md",
-    "LICENSE",
-    "RNMacOSFS.podspec"
+    "LICENSE"
   ],
+  "react-native": {
+    "macos": {
+      "sourceDir": "macos"
+    }
+  },
   "keywords": [
     "react-native",
     "macos",

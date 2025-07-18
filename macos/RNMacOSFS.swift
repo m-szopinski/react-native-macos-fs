@@ -1,13 +1,13 @@
 import Foundation
 
 @objc(RNMacOSFS)
-class RNMacOSFS: NSObject, RCTBridgeModule {   // <-- Add RCTBridgeModule here
+class RNMacOSFS: NSObject {
 
-  static func moduleName() -> String! {
+  @objc static func moduleName() -> String! {
     return "RNMacOSFS"
   }
 
-  static func requiresMainQueueSetup() -> Bool {
+  @objc static func requiresMainQueueSetup() -> Bool {
     return false
   }
 
@@ -44,7 +44,7 @@ class RNMacOSFS: NSObject, RCTBridgeModule {   // <-- Add RCTBridgeModule here
     }
 
     do {
-      try contents.write(toFile: path as String, atomically: true, encoding: encoding)
+      try contents.write(toFile: path as String, atomically: true, encoding: encoding.rawValue)
       resolve(nil)
     } catch {
       reject("WRITE_ERROR", "Failed to write file at path: \(path)", error)
@@ -104,60 +104,76 @@ class RNMacOSFS: NSObject, RCTBridgeModule {   // <-- Add RCTBridgeModule here
   }
 
   @objc
+  func readDir(_ path: NSString, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    let fileManager = FileManager.default
+    do {
+      let contents = try fileManager.contentsOfDirectory(atPath: path as String)
+      var result: [[String: Any]] = []
+
+      for item in contents {
+        let fullPath = (path as String) + "/" + item
+        var isDir: ObjCBool = false
+        fileManager.fileExists(atPath: fullPath, isDirectory: &isDir)
+
+        let entry: [String: Any] = [
+          "name": item,
+          "path": fullPath,
+          "isFile": !isDir.boolValue,
+          "isDirectory": isDir.boolValue
+        ]
+        result.append(entry)
+      }
+
+      resolve(result)
+    } catch {
+      reject("READDIR_ERROR", "Failed to read directory at path: \(path)", error)
+    }
+  }
+
+  @objc
   func pick(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-    let panel = NSOpenPanel()
-    panel.allowsMultipleSelection = false
-    panel.canChooseDirectories = false
-    panel.canChooseFiles = true
-    panel.begin { response in
-      if response == .OK, let url = panel.url {
-        resolve(url.path)
-      } else {
-        reject("PICK_CANCELLED", "User cancelled file picking", nil)
+    DispatchQueue.main.async {
+      let panel = NSOpenPanel()
+      panel.allowsMultipleSelection = false
+      panel.canChooseDirectories = false
+      panel.canChooseFiles = true
+      panel.begin { response in
+        if response == .OK, let url = panel.url {
+          resolve(url.path)
+        } else {
+          reject("PICK_CANCELLED", "User cancelled file picking", nil)
+        }
       }
     }
   }
 
   @objc
   func pickDirectory(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
-    let panel = NSOpenPanel()
-    panel.canChooseDirectories = true
-    panel.canChooseFiles = false
-    panel.allowsMultipleSelection = false
-    panel.begin { response in
-      if response == .OK, let url = panel.url {
-        resolve(url.path)
-      } else {
-        reject("PICK_DIRECTORY_CANCELLED", "User cancelled directory picking", nil)
+    DispatchQueue.main.async {
+      let panel = NSOpenPanel()
+      panel.canChooseDirectories = true
+      panel.canChooseFiles = false
+      panel.allowsMultipleSelection = false
+      panel.begin { response in
+        if response == .OK, let url = panel.url {
+          resolve(url.path)
+        } else {
+          reject("PICK_DIRECTORY_CANCELLED", "User cancelled directory picking", nil)
+        }
       }
     }
   }
 
-  @objc(getConstants:rejecter:)
-  func getConstants(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-    do {
-      let fileManager = FileManager.default
-      let documentPath = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first?.path ?? ""
-      let tempPath = NSTemporaryDirectory()
-      let cachePath = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first?.path ?? ""
+  @objc
+  func constantsToExport() -> [String: Any]! {
+    let fileManager = FileManager.default
 
-      var result: [String: String] = [
-        "DocumentDirectoryPath": documentPath,
-        "TemporaryDirectoryPath": tempPath,
-        "CachesDirectoryPath": cachePath
-      ]
-
-      if let downloads = fileManager.urls(for: .downloadsDirectory, in: .userDomainMask).first?.path {
-        result["DownloadsDirectoryPath"] = downloads
-      }
-
-      if let desktop = fileManager.urls(for: .desktopDirectory, in: .userDomainMask).first?.path {
-        result["DesktopDirectoryPath"] = desktop
-      }
-
-      resolve(result)
-    } catch {
-      reject("GET_CONSTANTS_ERROR", "Failed to get directory constants", error)
-    }
+    return [
+      "DocumentDirectoryPath": fileManager.urls(for: .documentDirectory, in: .userDomainMask).first?.path ?? "",
+      "TemporaryDirectoryPath": NSTemporaryDirectory(),
+      "CachesDirectoryPath": fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first?.path ?? "",
+      "DownloadsDirectoryPath": fileManager.urls(for: .downloadsDirectory, in: .userDomainMask).first?.path ?? "",
+      "DesktopDirectoryPath": fileManager.urls(for: .desktopDirectory, in: .userDomainMask).first?.path ?? ""
+    ]
   }
 }

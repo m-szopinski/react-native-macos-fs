@@ -69,3 +69,16 @@ console.log(paths.DocumentDirectoryPath);
 
 - `pick(): Promise<{ ... }>` — Opens a file picker dialog and resolves with the selected file path.
 - `pickDirectory(): Promise<string>` — Opens a folder picker dialog and resolves with the selected folder path.
+
+### Cross-Platform Usage Example (with react-native-fs)
+
+```ts
+import { NativeModules, Platform } from 'react-native';
+import * as RNFS from 'react-native-fs';
+
+const macOSFS = NativeModules.RNMacOSFS;
+const FS = Platform.OS === 'macos' ? macOSFS : RNFS;
+
+export const readFile = (path: string) => FS.readFile(path, 'utf8');
+export const DocumentDirectoryPath = FS.DocumentDirectoryPath;
+```
