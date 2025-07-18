@@ -1,0 +1,38 @@
+{
+  "name": "react-native-macos-fs",
+  "version": "0.1.0",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "source": "src/index.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepare": "npm run build"
+  },
+  "description": "Native filesystem access for React Native macOS using Swift",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/m-szopinski/react-native-macos-fs.git"
+  },
+  "author": "m-szopinski",
+  "files": [
+    "lib",
+    "macos",
+    "README.md",
+    "LICENSE",
+    "RNMacOSFS.podspec"
+  ],
+  "keywords": [
+    "react-native",
+    "macos",
+    "file-system",
+    "typescript"
+  ],
+  "peerDependencies": {
+    "react-native": ">=0.73.0",
+    "react-native-macos": ">=0.73.0"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
