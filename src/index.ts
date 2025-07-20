@@ -26,6 +26,15 @@ interface RNMacOSFSInterface {
             isDirectory: boolean;
         }>
     >;
+    stat(path: string): Promise<{
+        ctime: number;
+        mtime: number;
+        size: number;
+        mode: number;
+        originalFilepath: string;
+        isFile: boolean;
+        isDirectory: boolean;
+    }>;
     // Constants
     DocumentDirectoryPath: string;
     TemporaryDirectoryPath: string;
@@ -134,5 +143,13 @@ export const readDir = async (path: string) => {
         return await RNMacOSFS.readDir(path);
     } catch (err) {
         throw new Error(`[react-native-macos-fs] readDir failed on '${path}': ${String(err)}`);
+    }
+};
+
+export const stat = async (path: string) => {
+    try {
+        return await RNMacOSFS.stat(path);
+    } catch (err) {
+        throw new Error(`[react-native-macos-fs] stat failed on '${path}': ${String(err)}`);
     }
 };

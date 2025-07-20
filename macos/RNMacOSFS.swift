@@ -165,6 +165,40 @@ class RNMacOSFS: NSObject {
   }
 
   @objc
+  func stat(_ path: NSString, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
+    let fileManager = FileManager.default
+    var isDir: ObjCBool = false
+    let pathStr = path as String
+
+    let exists = fileManager.fileExists(atPath: pathStr, isDirectory: &isDir)
+    guard exists else {
+      reject("ENOENT", "File '\(pathStr)' does not exist", nil)
+      return
+    }
+
+    do {
+      let attrs = try fileManager.attributesOfItem(atPath: pathStr)
+      let size = attrs[.size] as? NSNumber ?? 0
+      let mtime = (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
+      let ctime = (attrs[.creationDate] as? Date)?.timeIntervalSince1970 ?? 0
+
+      let result: [String: Any] = [
+        "ctime": Int(ctime * 1000), // ms
+        "mtime": Int(mtime * 1000), // ms
+        "size": size,
+        "mode": 0, // Not implemented yet
+        "originalFilepath": pathStr,
+        "isFile": !isDir.boolValue,
+        "isDirectory": isDir.boolValue
+      ]
+
+      resolve(result)
+    } catch {
+      reject("STAT_ERROR", "Failed to get file stats for path: \(pathStr)", error)
+    }
+  }
+
+  @objc
   func constantsToExport() -> [String: Any]! {
     let fileManager = FileManager.default
 

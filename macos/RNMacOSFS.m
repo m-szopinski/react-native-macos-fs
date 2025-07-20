@@ -23,4 +23,6 @@ RCT_EXTERN_METHOD(pickDirectory:(RCTPromiseResolveBlock)resolve rejecter:(RCTPro
 
 RCT_EXTERN_METHOD(readDir:(NSString *)path resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(stat:(NSString *)path resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+
 @end
