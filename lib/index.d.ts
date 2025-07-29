@@ -1,5 +1,5 @@
 type Encoding = 'utf8' | 'utf16' | 'utf32' | 'ascii';
-interface ReadDirItem {
+export interface ReadDirItem {
     name: string;
     path: string;
     ctime: number;
@@ -9,7 +9,7 @@ interface ReadDirItem {
     isFile(): boolean;
     isDirectory(): boolean;
 }
-interface StatResult {
+export interface StatResult {
     ctime: number;
     mtime: number;
     size: number;

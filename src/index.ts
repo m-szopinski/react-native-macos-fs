@@ -8,7 +8,7 @@ const LINKING_ERROR =
 
 type Encoding = 'utf8' | 'utf16' | 'utf32' | 'ascii';
 
-interface ReadDirItem {
+export interface ReadDirItem {
     name: string;
     path: string;
     ctime: number;
@@ -19,7 +19,7 @@ interface ReadDirItem {
     isDirectory(): boolean;
 }
 
-interface StatResult {
+export interface StatResult {
     ctime: number;
     mtime: number;
     size: number;
@@ -39,10 +39,28 @@ interface RNMacOSFSInterface {
     writeFileBinary(path: string, base64: string): Promise<void>;
     pick(): Promise<string>;
     pickDirectory(): Promise<string>;
-    readDir(path: string): Promise<Array<Omit<ReadDirItem, 'isFile' | 'isDirectory'> & { type: 'file' | 'directory' }>>;
-    stat(path: string): Promise<Omit<StatResult, 'isFile' | 'isDirectory'> & { type: 'file' | 'directory' }>;
 
-    // Constants
+    readDir(path: string): Promise<
+        Array<{
+            name: string;
+            path: string;
+            ctime: number;
+            mtime: number;
+            size: number;
+            mode: number;
+            type: 'file' | 'directory';
+        }>
+    >;
+
+    stat(path: string): Promise<{
+        ctime: number;
+        mtime: number;
+        size: number;
+        mode: number;
+        originalFilepath: string;
+        type: 'file' | 'directory';
+    }>;
+
     DocumentDirectoryPath: string;
     TemporaryDirectoryPath: string;
     CachesDirectoryPath: string;
@@ -144,8 +162,8 @@ export const pickDirectory = async () => {
 
 export const readDir = async (path: string): Promise<ReadDirItem[]> => {
     try {
-        const result = await RNMacOSFS.readDir(path);
-        return result.map(({ name, path, ctime, mtime, size, mode, type }) => ({
+        const items = await RNMacOSFS.readDir(path);
+        return items.map(({ name, path, ctime, mtime, size, mode, type }) => ({
             name,
             path,
             ctime,
@@ -162,8 +180,7 @@ export const readDir = async (path: string): Promise<ReadDirItem[]> => {
 
 export const stat = async (path: string): Promise<StatResult> => {
     try {
-        const result = await RNMacOSFS.stat(path);
-        const { ctime, mtime, size, mode, originalFilepath, type } = result;
+        const { ctime, mtime, size, mode, originalFilepath, type } = await RNMacOSFS.stat(path);
         return {
             ctime,
             mtime,
