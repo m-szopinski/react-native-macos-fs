@@ -1,4 +1,23 @@
 type Encoding = 'utf8' | 'utf16' | 'utf32' | 'ascii';
+interface ReadDirItem {
+    name: string;
+    path: string;
+    ctime: number;
+    mtime: number;
+    size: number;
+    mode: number;
+    isFile(): boolean;
+    isDirectory(): boolean;
+}
+interface StatResult {
+    ctime: number;
+    mtime: number;
+    size: number;
+    mode: number;
+    originalFilepath: string;
+    isFile(): boolean;
+    isDirectory(): boolean;
+}
 export declare const constants: {
     readonly DocumentDirectoryPath: string;
     readonly TemporaryDirectoryPath: string;
@@ -15,19 +34,6 @@ export declare const readFileBinary: (path: string) => Promise<string>;
 export declare const writeFileBinary: (path: string, base64: string) => Promise<void>;
 export declare const pick: () => Promise<string>;
 export declare const pickDirectory: () => Promise<string>;
-export declare const readDir: (path: string) => Promise<{
-    name: string;
-    path: string;
-    isFile: () => boolean;
-    isDirectory: () => boolean;
-}[]>;
-export declare const stat: (path: string) => Promise<{
-    ctime: number;
-    mtime: number;
-    size: number;
-    mode: number;
-    originalFilepath: string;
-    isFile: () => boolean;
-    isDirectory: () => boolean;
-}>;
+export declare const readDir: (path: string) => Promise<ReadDirItem[]>;
+export declare const stat: (path: string) => Promise<StatResult>;
 export {};

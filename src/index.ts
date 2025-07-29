@@ -8,6 +8,27 @@ const LINKING_ERROR =
 
 type Encoding = 'utf8' | 'utf16' | 'utf32' | 'ascii';
 
+interface ReadDirItem {
+    name: string;
+    path: string;
+    ctime: number;
+    mtime: number;
+    size: number;
+    mode: number;
+    isFile(): boolean;
+    isDirectory(): boolean;
+}
+
+interface StatResult {
+    ctime: number;
+    mtime: number;
+    size: number;
+    mode: number;
+    originalFilepath: string;
+    isFile(): boolean;
+    isDirectory(): boolean;
+}
+
 interface RNMacOSFSInterface {
     readFile(path: string, encoding: Encoding): Promise<string>;
     writeFile(path: string, contents: string, encoding: Encoding): Promise<void>;
@@ -18,21 +39,9 @@ interface RNMacOSFSInterface {
     writeFileBinary(path: string, base64: string): Promise<void>;
     pick(): Promise<string>;
     pickDirectory(): Promise<string>;
-    readDir(path: string): Promise<
-        Array<{
-            name: string;
-            path: string;
-            type: 'file' | 'directory';
-        }>
-    >;
-    stat(path: string): Promise<{
-        ctime: number;
-        mtime: number;
-        size: number;
-        mode: number;
-        originalFilepath: string;
-        type: 'file' | 'directory';
-    }>;
+    readDir(path: string): Promise<Array<Omit<ReadDirItem, 'isFile' | 'isDirectory'> & { type: 'file' | 'directory' }>>;
+    stat(path: string): Promise<Omit<StatResult, 'isFile' | 'isDirectory'> & { type: 'file' | 'directory' }>;
+
     // Constants
     DocumentDirectoryPath: string;
     TemporaryDirectoryPath: string;
@@ -133,21 +142,25 @@ export const pickDirectory = async () => {
     }
 };
 
-export const readDir = async (path: string) => {
+export const readDir = async (path: string): Promise<ReadDirItem[]> => {
     try {
         const result = await RNMacOSFS.readDir(path);
-        return result.map(({ name, path, type }) => ({
+        return result.map(({ name, path, ctime, mtime, size, mode, type }) => ({
             name,
             path,
+            ctime,
+            mtime,
+            size,
+            mode,
             isFile: () => type === 'file',
-            isDirectory: () => type === 'directory'
+            isDirectory: () => type === 'directory',
         }));
     } catch (err) {
         throw new Error(`[react-native-macos-fs] readDir failed on '${path}': ${String(err)}`);
     }
 };
 
-export const stat = async (path: string) => {
+export const stat = async (path: string): Promise<StatResult> => {
     try {
         const result = await RNMacOSFS.stat(path);
         const { ctime, mtime, size, mode, originalFilepath, type } = result;
@@ -158,7 +171,7 @@ export const stat = async (path: string) => {
             mode,
             originalFilepath,
             isFile: () => type === 'file',
-            isDirectory: () => type === 'directory'
+            isDirectory: () => type === 'directory',
         };
     } catch (err) {
         throw new Error(`[react-native-macos-fs] stat failed on '${path}': ${String(err)}`);
