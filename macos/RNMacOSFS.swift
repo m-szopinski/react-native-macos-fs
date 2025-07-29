@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 
 @objc(RNMacOSFS)
 class RNMacOSFS: NSObject {
@@ -96,7 +97,7 @@ class RNMacOSFS: NSObject {
     }
 
     do {
-      try data.write(to: URL(fileURLWithPath: path as String))
+      try data.write(to: URL(fileURLWithPath: path as String), options: .atomic)
       resolve(nil)
     } catch {
       reject("WRITE_BINARY_ERROR", "Failed to write binary file at path: \(path)", error)
@@ -111,14 +112,24 @@ class RNMacOSFS: NSObject {
       var result: [[String: Any]] = []
 
       for item in contents {
-        let fullPath = (path as String) + "/" + item
+        let fullPath = (path as String as NSString).appendingPathComponent(item)
         var isDir: ObjCBool = false
         fileManager.fileExists(atPath: fullPath, isDirectory: &isDir)
+
+        let attrs = try fileManager.attributesOfItem(atPath: fullPath)
+        let size = attrs[.size] as? NSNumber ?? 0
+        let mtime = (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
+        let ctime = (attrs[.creationDate] as? Date)?.timeIntervalSince1970 ?? 0
+        let mode = (attrs[.posixPermissions] as? NSNumber)?.intValue ?? 0
 
         let entry: [String: Any] = [
           "name": item,
           "path": fullPath,
-          "type": isDir.boolValue ? "directory" : "file"
+          "type": isDir.boolValue ? "directory" : "file",
+          "ctime": Int(ctime * 1000),
+          "mtime": Int(mtime * 1000),
+          "size": size,
+          "mode": mode
         ]
         result.append(entry)
       }
@@ -136,6 +147,8 @@ class RNMacOSFS: NSObject {
       panel.allowsMultipleSelection = false
       panel.canChooseDirectories = false
       panel.canChooseFiles = true
+      panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser
+
       panel.begin { response in
         if response == .OK, let url = panel.url {
           resolve(url.path)
@@ -153,6 +166,8 @@ class RNMacOSFS: NSObject {
       panel.canChooseDirectories = true
       panel.canChooseFiles = false
       panel.allowsMultipleSelection = false
+      panel.directoryURL = FileManager.default.homeDirectoryForCurrentUser
+
       panel.begin { response in
         if response == .OK, let url = panel.url {
           resolve(url.path)
@@ -180,12 +195,13 @@ class RNMacOSFS: NSObject {
       let size = attrs[.size] as? NSNumber ?? 0
       let mtime = (attrs[.modificationDate] as? Date)?.timeIntervalSince1970 ?? 0
       let ctime = (attrs[.creationDate] as? Date)?.timeIntervalSince1970 ?? 0
+      let mode = (attrs[.posixPermissions] as? NSNumber)?.intValue ?? 0
 
       let result: [String: Any] = [
         "ctime": Int(ctime * 1000),
         "mtime": Int(mtime * 1000),
         "size": size,
-        "mode": 0,
+        "mode": mode,
         "originalFilepath": pathStr,
         "type": isDir.boolValue ? "directory" : "file"
       ]
@@ -201,11 +217,11 @@ class RNMacOSFS: NSObject {
     let fileManager = FileManager.default
 
     return [
-      "DocumentDirectoryPath": fileManager.urls(for: .documentDirectory, in: .userDomainMask).first?.path ?? "",
+      "DocumentDirectoryPath": fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!.path,
       "TemporaryDirectoryPath": NSTemporaryDirectory(),
-      "CachesDirectoryPath": fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first?.path ?? "",
-      "DownloadsDirectoryPath": fileManager.urls(for: .downloadsDirectory, in: .userDomainMask).first?.path ?? "",
-      "DesktopDirectoryPath": fileManager.urls(for: .desktopDirectory, in: .userDomainMask).first?.path ?? ""
+      "CachesDirectoryPath": fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first!.path,
+      "DownloadsDirectoryPath": fileManager.urls(for: .downloadsDirectory, in: .userDomainMask).first!.path,
+      "DesktopDirectoryPath": fileManager.urls(for: .desktopDirectory, in: .userDomainMask).first!.path
     ]
   }
 }
