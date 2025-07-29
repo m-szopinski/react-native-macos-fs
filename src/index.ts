@@ -57,13 +57,11 @@ if (!RNMacOSFS) {
     throw new Error(LINKING_ERROR);
 }
 
-export const constants = {
-    DocumentDirectoryPath: RNMacOSFS.DocumentDirectoryPath,
-    TemporaryDirectoryPath: RNMacOSFS.TemporaryDirectoryPath,
-    CachesDirectoryPath: RNMacOSFS.CachesDirectoryPath,
-    DownloadsDirectoryPath: RNMacOSFS.DownloadsDirectoryPath,
-    DesktopDirectoryPath: RNMacOSFS.DesktopDirectoryPath,
-} as const;
+export const DocumentDirectoryPath = RNMacOSFS.DocumentDirectoryPath;
+export const TemporaryDirectoryPath = RNMacOSFS.TemporaryDirectoryPath;
+export const CachesDirectoryPath = RNMacOSFS.CachesDirectoryPath;
+export const DownloadsDirectoryPath = RNMacOSFS.DownloadsDirectoryPath;
+export const DesktopDirectoryPath = RNMacOSFS.DesktopDirectoryPath;
 
 const defaultEncoding: Encoding = 'utf8';
 

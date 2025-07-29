@@ -18,13 +18,11 @@ export interface StatResult {
     isFile(): boolean;
     isDirectory(): boolean;
 }
-export declare const constants: {
-    readonly DocumentDirectoryPath: string;
-    readonly TemporaryDirectoryPath: string;
-    readonly CachesDirectoryPath: string;
-    readonly DownloadsDirectoryPath: string;
-    readonly DesktopDirectoryPath: string;
-};
+export declare const DocumentDirectoryPath: string;
+export declare const TemporaryDirectoryPath: string;
+export declare const CachesDirectoryPath: string;
+export declare const DownloadsDirectoryPath: string;
+export declare const DesktopDirectoryPath: string;
 export declare const readFile: (path: string, encoding?: Encoding) => Promise<string>;
 export declare const writeFile: (path: string, contents: string, encoding?: Encoding) => Promise<void>;
 export declare const unlink: (path: string) => Promise<void>;
