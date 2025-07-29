@@ -22,8 +22,7 @@ interface RNMacOSFSInterface {
         Array<{
             name: string;
             path: string;
-            isFile: boolean;
-            isDirectory: boolean;
+            type: 'file' | 'directory';
         }>
     >;
     stat(path: string): Promise<{
@@ -32,8 +31,7 @@ interface RNMacOSFSInterface {
         size: number;
         mode: number;
         originalFilepath: string;
-        isFile: boolean;
-        isDirectory: boolean;
+        type: 'file' | 'directory';
     }>;
     // Constants
     DocumentDirectoryPath: string;
@@ -43,14 +41,12 @@ interface RNMacOSFSInterface {
     DesktopDirectoryPath: string;
 }
 
-// Ensure RNMacOSFS is either the real native module or a proxy that throws
 const RNMacOSFS = NativeModules.RNMacOSFS as RNMacOSFSInterface | undefined;
 
 if (!RNMacOSFS) {
     throw new Error(LINKING_ERROR);
 }
 
-// Export constants immediately and synchronously
 export const constants = {
     DocumentDirectoryPath: RNMacOSFS.DocumentDirectoryPath,
     TemporaryDirectoryPath: RNMacOSFS.TemporaryDirectoryPath,
@@ -65,7 +61,6 @@ function handleError(method: string, path: string, err: unknown): never {
     throw new Error(`[react-native-macos-fs] ${method} failed on '${path}': ${String(err)}`);
 }
 
-// API methods
 export const readFile = async (path: string, encoding: Encoding = defaultEncoding) => {
     try {
         return await RNMacOSFS.readFile(path, encoding);
@@ -140,7 +135,13 @@ export const pickDirectory = async () => {
 
 export const readDir = async (path: string) => {
     try {
-        return await RNMacOSFS.readDir(path);
+        const result = await RNMacOSFS.readDir(path);
+        return result.map(({ name, path, type }) => ({
+            name,
+            path,
+            isFile: () => type === 'file',
+            isDirectory: () => type === 'directory'
+        }));
     } catch (err) {
         throw new Error(`[react-native-macos-fs] readDir failed on '${path}': ${String(err)}`);
     }
@@ -148,7 +149,17 @@ export const readDir = async (path: string) => {
 
 export const stat = async (path: string) => {
     try {
-        return await RNMacOSFS.stat(path);
+        const result = await RNMacOSFS.stat(path);
+        const { ctime, mtime, size, mode, originalFilepath, type } = result;
+        return {
+            ctime,
+            mtime,
+            size,
+            mode,
+            originalFilepath,
+            isFile: () => type === 'file',
+            isDirectory: () => type === 'directory'
+        };
     } catch (err) {
         throw new Error(`[react-native-macos-fs] stat failed on '${path}': ${String(err)}`);
     }

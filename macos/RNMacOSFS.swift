@@ -118,8 +118,7 @@ class RNMacOSFS: NSObject {
         let entry: [String: Any] = [
           "name": item,
           "path": fullPath,
-          "isFile": !isDir.boolValue,
-          "isDirectory": isDir.boolValue
+          "type": isDir.boolValue ? "directory" : "file"
         ]
         result.append(entry)
       }
@@ -183,13 +182,12 @@ class RNMacOSFS: NSObject {
       let ctime = (attrs[.creationDate] as? Date)?.timeIntervalSince1970 ?? 0
 
       let result: [String: Any] = [
-        "ctime": Int(ctime * 1000), // ms
-        "mtime": Int(mtime * 1000), // ms
+        "ctime": Int(ctime * 1000),
+        "mtime": Int(mtime * 1000),
         "size": size,
-        "mode": 0, // Not implemented yet
+        "mode": 0,
         "originalFilepath": pathStr,
-        "isFile": !isDir.boolValue,
-        "isDirectory": isDir.boolValue
+        "type": isDir.boolValue ? "directory" : "file"
       ]
 
       resolve(result)
