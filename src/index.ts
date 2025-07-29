@@ -40,27 +40,10 @@ interface RNMacOSFSInterface {
     pick(): Promise<string>;
     pickDirectory(): Promise<string>;
 
-    readDir(path: string): Promise<
-        Array<{
-            name: string;
-            path: string;
-            ctime: number;
-            mtime: number;
-            size: number;
-            mode: number;
-            type: 'file' | 'directory';
-        }>
-    >;
+    readDir(path: string): Promise<ReadDirItem[]>;
+    stat(path: string): Promise<StatResult>;
 
-    stat(path: string): Promise<{
-        ctime: number;
-        mtime: number;
-        size: number;
-        mode: number;
-        originalFilepath: string;
-        type: 'file' | 'directory';
-    }>;
-
+    // Constants
     DocumentDirectoryPath: string;
     TemporaryDirectoryPath: string;
     CachesDirectoryPath: string;
@@ -163,15 +146,11 @@ export const pickDirectory = async () => {
 export const readDir = async (path: string): Promise<ReadDirItem[]> => {
     try {
         const items = await RNMacOSFS.readDir(path);
-        return items.map(({ name, path, ctime, mtime, size, mode, type }) => ({
-            name,
-            path,
-            ctime,
-            mtime,
-            size,
-            mode,
-            isFile: () => type === 'file',
-            isDirectory: () => type === 'directory',
+
+        return items.map((item) => ({
+            ...item,
+            isFile: () => (item as any).type === 'file',
+            isDirectory: () => (item as any).type === 'directory',
         }));
     } catch (err) {
         throw new Error(`[react-native-macos-fs] readDir failed on '${path}': ${String(err)}`);
@@ -180,15 +159,12 @@ export const readDir = async (path: string): Promise<ReadDirItem[]> => {
 
 export const stat = async (path: string): Promise<StatResult> => {
     try {
-        const { ctime, mtime, size, mode, originalFilepath, type } = await RNMacOSFS.stat(path);
+        const result = await RNMacOSFS.stat(path);
+
         return {
-            ctime,
-            mtime,
-            size,
-            mode,
-            originalFilepath,
-            isFile: () => type === 'file',
-            isDirectory: () => type === 'directory',
+            ...result,
+            isFile: () => (result as any).type === 'file',
+            isDirectory: () => (result as any).type === 'directory',
         };
     } catch (err) {
         throw new Error(`[react-native-macos-fs] stat failed on '${path}': ${String(err)}`);
