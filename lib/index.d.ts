@@ -18,8 +18,8 @@ export declare const pickDirectory: () => Promise<string>;
 export declare const readDir: (path: string) => Promise<{
     name: string;
     path: string;
-    isFile: boolean;
-    isDirectory: boolean;
+    isFile: () => boolean;
+    isDirectory: () => boolean;
 }[]>;
 export declare const stat: (path: string) => Promise<{
     ctime: number;
@@ -27,7 +27,7 @@ export declare const stat: (path: string) => Promise<{
     size: number;
     mode: number;
     originalFilepath: string;
-    isFile: boolean;
-    isDirectory: boolean;
+    isFile: () => boolean;
+    isDirectory: () => boolean;
 }>;
 export {};
