@@ -21,4 +21,13 @@ export declare const readDir: (path: string) => Promise<{
     isFile: boolean;
     isDirectory: boolean;
 }[]>;
+export declare const stat: (path: string) => Promise<{
+    ctime: number;
+    mtime: number;
+    size: number;
+    mode: number;
+    originalFilepath: string;
+    isFile: boolean;
+    isDirectory: boolean;
+}>;
 export {};
