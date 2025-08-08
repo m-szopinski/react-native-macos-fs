@@ -1,8 +1,8 @@
-import { NativeModules, Platform } from 'react-native';
+import {NativeModules, Platform} from 'react-native';
 
 const LINKING_ERROR =
     `The package 'react-native-macos-fs' doesn't seem to be linked. Make sure:\n\n` +
-    Platform.select({ macos: "- You have run 'pod install'\n", default: '' }) +
+    Platform.select({macos: "- You have run 'pod install'\n", default: ''}) +
     '- You rebuilt the app after installing the package\n' +
     '- You are not using Expo managed workflow\n';
 
@@ -15,7 +15,9 @@ export interface ReadDirItem {
     mtime: number;
     size: number;
     mode: number;
+
     isFile(): boolean;
+
     isDirectory(): boolean;
 }
 
@@ -25,22 +27,33 @@ export interface StatResult {
     size: number;
     mode: number;
     originalFilepath: string;
+
     isFile(): boolean;
+
     isDirectory(): boolean;
 }
 
 interface RNMacOSFSInterface {
     readFile(path: string, encoding: Encoding): Promise<string>;
+
     writeFile(path: string, contents: string, encoding: Encoding): Promise<void>;
+
     unlink(path: string): Promise<void>;
+
     exists(path: string): Promise<boolean>;
+
     mkdir(path: string): Promise<void>;
+
     readFileBinary(path: string): Promise<string>;
+
     writeFileBinary(path: string, base64: string): Promise<void>;
+
     pick(): Promise<string>;
+
     pickDirectory(): Promise<string>;
 
     readDir(path: string): Promise<ReadDirItem[]>;
+
     stat(path: string): Promise<StatResult>;
 
     // Constants
@@ -51,9 +64,9 @@ interface RNMacOSFSInterface {
     DesktopDirectoryPath: string;
 }
 
-const RNMacOSFS = NativeModules.RNMacOSFS as RNMacOSFSInterface | undefined;
-
-if (!RNMacOSFS) {
+const isMacOS = Platform.OS === 'macos';
+const RNMacOSFS = NativeModules.RNMacOSFS as RNMacOSFSInterface;
+if (isMacOS && !RNMacOSFS) {
     throw new Error(LINKING_ERROR);
 }
 
@@ -176,3 +189,4 @@ export const stat = async (path: string): Promise<StatResult> => {
         throw new Error(`[react-native-macos-fs] stat failed on '${path}': ${String(err)}`);
     }
 };
+
