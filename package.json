@@ -1,6 +1,6 @@
 {
   "name": "react-native-macos-fs",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "source": "src/index.ts",
