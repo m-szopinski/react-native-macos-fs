@@ -70,11 +70,11 @@ if (isMacOS && !RNMacOSFS) {
     throw new Error(LINKING_ERROR);
 }
 
-export const DocumentDirectoryPath = RNMacOSFS.DocumentDirectoryPath;
-export const TemporaryDirectoryPath = RNMacOSFS.TemporaryDirectoryPath;
-export const CachesDirectoryPath = RNMacOSFS.CachesDirectoryPath;
-export const DownloadsDirectoryPath = RNMacOSFS.DownloadsDirectoryPath;
-export const DesktopDirectoryPath = RNMacOSFS.DesktopDirectoryPath;
+export const DocumentDirectoryPath = RNMacOSFS?.DocumentDirectoryPath;
+export const TemporaryDirectoryPath = RNMacOSFS?.TemporaryDirectoryPath;
+export const CachesDirectoryPath = RNMacOSFS?.CachesDirectoryPath;
+export const DownloadsDirectoryPath = RNMacOSFS?.DownloadsDirectoryPath;
+export const DesktopDirectoryPath = RNMacOSFS?.DesktopDirectoryPath;
 
 const defaultEncoding: Encoding = 'utf8';
 
